@@ -1,10 +1,10 @@
 module tls_client_cffi
 
-go 1.24.1
+go 1.23
 
 require (
 	github.com/bogdanfinn/fhttp v0.6.8
-	xiaozhou26/re-tlsclient v1.15.1
+	github.com/xiaozhou26/re-tlsclient v1.15.1
 	github.com/google/uuid v1.6.0
 )
 
@@ -24,4 +24,4 @@ require (
 	golang.org/x/text v0.32.0 // indirect
 )
 
-// replace xiaozhou26/re-tlsclient => ../
+// replace github.com/xiaozhou26/re-tlsclient => ../

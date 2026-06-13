@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	http "github.com/bogdanfinn/fhttp"
-	tls_client "xiaozhou26/re-tlsclient"
-	"xiaozhou26/re-tlsclient/profiles"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -89,13 +89,13 @@ func TestJA4Support(t *testing.T) {
 			// Check JA4 (this is what we're testing!)
 			ja4, hasJA4 := tlsData["ja4"]
 			if hasJA4 {
-				t.Logf("  ‚úÖ JA4: %v", ja4)
+				t.Logf("  ‚ú?JA4: %v", ja4)
 			} else {
 				t.Logf("  ‚ö†Ô∏è JA4 not present in response")
 				// Check if there's a ja4_r field
 				ja4r, hasJA4R := tlsData["ja4_r"]
 				if hasJA4R {
-					t.Logf("  ‚úÖ JA4_r: %v", ja4r)
+					t.Logf("  ‚ú?JA4_r: %v", ja4r)
 				}
 				// Check all available keys
 				t.Logf("  Available TLS fields: %v", getKeys(tlsData))
@@ -104,7 +104,7 @@ func TestJA4Support(t *testing.T) {
 			// Check JA4 hash
 			ja4Hash, hasJA4Hash := tlsData["ja4_hash"]
 			if hasJA4Hash {
-				t.Logf("  ‚úÖ JA4 hash: %v", ja4Hash)
+				t.Logf("  ‚ú?JA4 hash: %v", ja4Hash)
 			}
 
 			// Print HTTP/2 info
@@ -143,9 +143,9 @@ func TestJA4ComputeLocally(t *testing.T) {
 	assert.Len(t, fingerprint.JA4, 12, "JA4 should be 12 hex chars")
 
 	// JA4 should start with t13d (TLS 1.3, d for default/QUIC)
-	// The actual hash follows after the prefix ‚Äî we compute the full hash of the string
+	// The actual hash follows after the prefix ‚Ä?we compute the full hash of the string
 	// so the format is just 12 hex chars of SHA256
-	t.Logf("  Format check: JA4 is 12 hex chars ‚úì")
+	t.Logf("  Format check: JA4 is 12 hex chars ‚ú?)
 }
 
 // getKeys returns the keys of a map for debugging.

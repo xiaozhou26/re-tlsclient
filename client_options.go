@@ -10,7 +10,7 @@ import (
 	"time"
 
 	http "github.com/bogdanfinn/fhttp"
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	tls "github.com/bogdanfinn/utls"
 	"golang.org/x/net/proxy"
 )
@@ -361,7 +361,7 @@ func WithPostHook(hook PostResponseHookFunc) HttpClientOption {
 // (Zero-DNS, socket tagging, DPI bypass).
 //
 // WARNING: This overrides built-in proxy settings. If you need a proxy, you must handle the CONNECT handshake manually.
-// CHECK: https://xiaozhou26/re-tlsclient/pull/218#issuecomment-3858171801
+// CHECK: https://github.com/xiaozhou26/re-tlsclient/pull/218#issuecomment-3858171801
 func WithDialContext(dialContext func(ctx context.Context, network, addr string) (net.Conn, error)) HttpClientOption {
 	return func(config *httpClientConfig) {
 		config.dialContext = dialContext

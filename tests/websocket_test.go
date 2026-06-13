@@ -7,8 +7,8 @@ import (
 
 	"github.com/bogdanfinn/fhttp"
 	"github.com/bogdanfinn/fhttp/httptest"
-	tls_client "xiaozhou26/re-tlsclient"
-	"xiaozhou26/re-tlsclient/profiles"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	gorillaWebsocket "github.com/bogdanfinn/websocket"
 	"github.com/stretchr/testify/require"
 )

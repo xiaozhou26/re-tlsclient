@@ -11,13 +11,13 @@ import (
 	"os"
 	"sync"
 
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	"golang.org/x/net/html/charset"
 
 	http "github.com/bogdanfinn/fhttp"
 	"github.com/bogdanfinn/fhttp/cookiejar"
 	"github.com/bogdanfinn/fhttp/http2"
-	tls_client "xiaozhou26/re-tlsclient"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
 	tls "github.com/bogdanfinn/utls"
 	"github.com/google/uuid"
 )

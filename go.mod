@@ -1,6 +1,6 @@
-module xiaozhou26/re-tlsclient
+module github.com/xiaozhou26/re-tlsclient
 
-go 1.24.1
+go 1.23
 
 require (
 	github.com/bdandy/go-socks4 v1.2.3

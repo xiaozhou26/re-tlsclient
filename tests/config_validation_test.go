@@ -7,8 +7,8 @@ import (
 	"time"
 
 	http "github.com/bogdanfinn/fhttp"
-	tls_client "xiaozhou26/re-tlsclient"
-	"xiaozhou26/re-tlsclient/profiles"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	"golang.org/x/net/proxy"
 )
 
@@ -29,7 +29,7 @@ func TestConfigValidation_HTTP3RacingWithDisableHTTP3(t *testing.T) {
 		t.Fatalf("Expected error message to contain '%s', got: %v", expectedMsg, err)
 	}
 
-	t.Logf("âœ“ Correctly rejected config with error: %v", err)
+	t.Logf("âœ?Correctly rejected config with error: %v", err)
 }
 
 func TestConfigValidation_HTTP3RacingWithForceHTTP1(t *testing.T) {
@@ -49,7 +49,7 @@ func TestConfigValidation_HTTP3RacingWithForceHTTP1(t *testing.T) {
 		t.Fatalf("Expected error message to contain '%s', got: %v", expectedMsg, err)
 	}
 
-	t.Logf("âœ“ Correctly rejected config with error: %v", err)
+	t.Logf("âœ?Correctly rejected config with error: %v", err)
 }
 
 func TestConfigValidation_DisableBothIPVersions(t *testing.T) {
@@ -69,7 +69,7 @@ func TestConfigValidation_DisableBothIPVersions(t *testing.T) {
 		t.Fatalf("Expected error message to contain '%s', got: %v", expectedMsg, err)
 	}
 
-	t.Logf("âœ“ Correctly rejected config with error: %v", err)
+	t.Logf("âœ?Correctly rejected config with error: %v", err)
 }
 
 func TestConfigValidation_ValidConfigs(t *testing.T) {
@@ -135,7 +135,7 @@ func TestConfigValidation_ValidConfigs(t *testing.T) {
 				t.Fatal("Expected client to be created, but got nil")
 			}
 
-			t.Logf("âœ“ Config accepted: %s", tc.name)
+			t.Logf("âœ?Config accepted: %s", tc.name)
 		})
 	}
 }
@@ -161,7 +161,7 @@ func TestConfigValidation_CertificatePinningWithInsecureSkipVerify(t *testing.T)
 		t.Fatalf("Expected error message to contain '%s', got: %v", expectedMsg, err)
 	}
 
-	t.Logf("âœ“ Correctly rejected config with error: %v", err)
+	t.Logf("âœ?Correctly rejected config with error: %v", err)
 }
 
 func TestConfigValidation_ProxyUrlAndDialerFactory(t *testing.T) {
@@ -185,7 +185,7 @@ func TestConfigValidation_ProxyUrlAndDialerFactory(t *testing.T) {
 		t.Fatalf("Expected error message to contain '%s', got: %v", expectedMsg, err)
 	}
 
-	t.Logf("âœ“ Correctly rejected config with error: %v", err)
+	t.Logf("âœ?Correctly rejected config with error: %v", err)
 }
 
 func TestConfigValidation_ServerNameOverwriteWithInsecure(t *testing.T) {
@@ -204,7 +204,7 @@ func TestConfigValidation_ServerNameOverwriteWithInsecure(t *testing.T) {
 		t.Fatal("Expected client to be created, but got nil")
 	}
 
-	t.Log("âœ“ Server name overwrite with insecure skip verify is correctly accepted")
+	t.Log("âœ?Server name overwrite with insecure skip verify is correctly accepted")
 }
 
 func TestConfigValidation_CertificatePinningWithoutInsecure(t *testing.T) {
@@ -226,7 +226,7 @@ func TestConfigValidation_CertificatePinningWithoutInsecure(t *testing.T) {
 		t.Fatal("Expected client to be created, but got nil")
 	}
 
-	t.Log("âœ“ Certificate pinning without insecure skip verify is correctly accepted")
+	t.Log("âœ?Certificate pinning without insecure skip verify is correctly accepted")
 }
 
 func TestConfigValidation_OrderIndependent(t *testing.T) {

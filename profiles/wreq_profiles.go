@@ -50,7 +50,7 @@ var h2SettingsOrderType2 = []http2.SettingID{
 	http2.SettingMaxHeaderListSize,
 }
 
-// http2Type3: v117+ (push=false, no explicit max_concurrent_streams â€” wreq default)
+// http2Type3: v117+ (push=false, no explicit max_concurrent_streams â€?wreq default)
 var h2SettingsType3 = map[http2.SettingID]uint32{
 	http2.SettingHeaderTableSize:   65536,
 	http2.SettingEnablePush:        0,
@@ -911,20 +911,20 @@ func makeFirefoxProfile(version string, curves []tls.CurveID, keyShares []tls.Ke
 	}
 }
 
-// Firefox 109: tls_options!(2) â€” no ECH, no PSK, no cert compressors
+// Firefox 109: tls_options!(2) â€?no ECH, no PSK, no cert compressors
 var Firefox_109 = makeFirefoxProfile("109", firefoxCurves1, firefoxKeyShares1, false, false, true, false, nil)
 
 // Firefox 117: same as 109
 var Firefox_117 = makeFirefoxProfile("117", firefoxCurves1, firefoxKeyShares1, false, false, true, false, nil)
 
-// Firefox 128: tls_options!(3) â€” ECH GREASE, no PSK, no session ticket, no cert compressors
+// Firefox 128: tls_options!(3) â€?ECH GREASE, no PSK, no session ticket, no cert compressors
 var Firefox_128 = makeFirefoxProfile("128", firefoxCurves1, firefoxKeyShares1, true, false, false, false, nil)
 
-// Firefox 133: tls_options!(1) â€” ECH GREASE + PSK + cert compressors
+// Firefox 133: tls_options!(1) â€?ECH GREASE + PSK + cert compressors
 var Firefox_133 = makeFirefoxProfile("133", firefoxCurves2, firefoxKeyShares2, true, true, true, false,
 	[]tls.CertCompressionAlgo{tls.CertCompressionZlib, tls.CertCompressionBrotli, tls.CertCompressionZstd})
 
-// Firefox 135: tls_options!(4) â€” ECH GREASE + PSK + signed cert timestamps + cert compressors
+// Firefox 135: tls_options!(4) â€?ECH GREASE + PSK + signed cert timestamps + cert compressors
 var Firefox_135 = makeFirefoxProfile("135", firefoxCurves2, firefoxKeyShares2, true, true, true, true,
 	[]tls.CertCompressionAlgo{tls.CertCompressionZlib, tls.CertCompressionBrotli, tls.CertCompressionZstd})
 

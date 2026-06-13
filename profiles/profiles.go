@@ -10,7 +10,7 @@ var DefaultClientProfile = Chrome_147
 // MappedTLSClients maps string identifiers to browser profiles.
 // All fingerprints are ported from https://github.com/0x676e67/wreq-util
 var MappedTLSClients = map[string]ClientProfile{
-	// Chrome â€” v100 to v148
+	// Chrome â€?v100 to v148
 	"chrome_100": Chrome_100,
 	"chrome_101": Chrome_101,
 	"chrome_104": Chrome_104,
@@ -52,7 +52,7 @@ var MappedTLSClients = map[string]ClientProfile{
 	"chrome_147": Chrome_147,
 	"chrome_148": Chrome_148,
 
-	// Edge â€” v131 to v148
+	// Edge â€?v131 to v148
 	"edge_131": Edge_131,
 	"edge_134": Edge_134,
 	"edge_135": Edge_135,
@@ -70,7 +70,7 @@ var MappedTLSClients = map[string]ClientProfile{
 	"edge_147": Edge_147,
 	"edge_148": Edge_148,
 
-	// Safari â€” macOS 18.x, 26.x
+	// Safari â€?macOS 18.x, 26.x
 	"safari_18":   Safari_18,
 	"safari_18_2": Safari_18_2,
 	"safari_18_3": Safari_18_3,
@@ -78,11 +78,11 @@ var MappedTLSClients = map[string]ClientProfile{
 	"safari_26_1": Safari_26_1,
 	"safari_26_2": Safari_26_2,
 
-	// Safari â€” iOS
+	// Safari â€?iOS
 	"safari_ios_18": Safari_IOS_18,
 	"safari_ios_26": Safari_IOS_26,
 
-	// Firefox â€” v109 to v151
+	// Firefox â€?v109 to v151
 	"firefox_109": Firefox_109,
 	"firefox_117": Firefox_117,
 	"firefox_128": Firefox_128,
@@ -101,11 +101,11 @@ var MappedTLSClients = map[string]ClientProfile{
 	"firefox_150": Firefox_150,
 	"firefox_151": Firefox_151,
 
-	// OkHttp â€” Android
+	// OkHttp â€?Android
 	"okhttp_4": OkHttp4,
 	"okhttp_5": OkHttp5,
 
-	// Opera â€” v116 to v131
+	// Opera â€?v116 to v131
 	"opera_116": Opera_116,
 	"opera_117": Opera_117,
 	"opera_118": Opera_118,

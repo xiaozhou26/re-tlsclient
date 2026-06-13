@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 
 	http "github.com/bogdanfinn/fhttp"
 	"github.com/bogdanfinn/fhttp/http2"
-	tls_client "xiaozhou26/re-tlsclient"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
 	tls "github.com/bogdanfinn/utls"
 )
 
@@ -154,7 +154,7 @@ func sslPinning() {
 	jar := tls_client.NewCookieJar()
 
 	//	I generated the pins by running the following command:
-	//	âžœ hpkp-pins -server=bstn.com:443
+	//	âž?hpkp-pins -server=bstn.com:443
 
 	pins := map[string][]string{
 		"bstn.com": {

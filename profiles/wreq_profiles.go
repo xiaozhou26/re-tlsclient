@@ -268,69 +268,84 @@ func makeChromeTLSType4() []tls.TLSExtension {
 }
 
 // tlsType5: +permute +ECH +PSK (v117, v120-v123)
+// Extension order matches real Chrome (verified against bogdanfinn/tls-client).
 func makeChromeTLSType5() []tls.TLSExtension {
 	return []tls.TLSExtension{
 		&tls.UtlsGREASEExtension{},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
+		&tls.SNIExtension{},
 		&tls.ApplicationSettingsExtension{SupportedProtocols: []string{"h2"}},
+		&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+		&tls.SupportedCurvesExtension{Curves: chromeCurvesV1},
+		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
+		&tls.SessionTicketExtension{},
+		&tls.StatusRequestExtension{},
+		&tls.ExtendedMasterSecretExtension{},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
 		}},
-		&tls.SCTExtension{},
-		tls.BoringGREASEECH(),
-		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
-		&tls.SupportedCurvesExtension{Curves: chromeCurvesV1},
-		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
-		&tls.ExtendedMasterSecretExtension{},
-		&tls.SessionTicketExtension{},
-		&tls.SNIExtension{},
-		&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
-		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
+		&tls.SCTExtension{},
 		&tls.SupportedPointsExtension{SupportedPoints: []byte{tls.PointFormatUncompressed}},
-		&tls.StatusRequestExtension{},
+		tls.BoringGREASEECH(),
 		&tls.ALPNExtension{AlpnProtocols: []string{"h2", "http/1.1"}},
+		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 		&tls.UtlsGREASEExtension{},
 		&tls.UtlsPreSharedKeyExtension{},
 	}
 }
 
-// tlsType6: +permute +ECH +PSK +CURVES_3 +ALPS_new (v131, v124 with CURVES_2)
-func makeChromeTLSType6(curves []tls.CurveID, keyShares []tls.KeyShare, alpsNew bool) []tls.TLSExtension {
+// tlsType6: +permute +ECH +CURVES_3 +ALPS_new +PSK (v124-v131)
+// Extension order matches real Chrome (verified against wreq-util).
+// trust_anchors extension (0xca34) only for Chrome 146+.
+func makeChromeTLSType6(curves []tls.CurveID, keyShares []tls.KeyShare, alpsNew bool, psk bool, trustAnchors bool) []tls.TLSExtension {
+	var alps tls.TLSExtension
+	if alpsNew {
+		alps = &tls.ApplicationSettingsExtensionNew{SupportedProtocols: []string{"h2"}}
+	} else {
+		alps = &tls.ApplicationSettingsExtension{SupportedProtocols: []string{"h2"}}
+	}
+
 	exts := []tls.TLSExtension{
 		&tls.UtlsGREASEExtension{},
-	}
-	if alpsNew {
-		exts = append(exts, &tls.ApplicationSettingsExtensionNew{SupportedProtocols: []string{"h2"}})
-	} else {
-		exts = append(exts, &tls.ApplicationSettingsExtension{SupportedProtocols: []string{"h2"}})
-	}
-	exts = append(exts,
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(keyShares)},
+		&tls.SNIExtension{},
+		alps,
+		&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
+		&tls.SupportedCurvesExtension{Curves: curves},
+		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
+		&tls.SessionTicketExtension{},
+		&tls.StatusRequestExtension{},
+		&tls.ExtendedMasterSecretExtension{},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
 		}},
-		&tls.SCTExtension{},
-		tls.BoringGREASEECH(),
-		&tls.KeyShareExtension{KeyShares: copyKeyShares(keyShares)},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
-		&tls.SupportedCurvesExtension{Curves: curves},
-		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
-		&tls.ExtendedMasterSecretExtension{},
-		&tls.SessionTicketExtension{},
-		&tls.SNIExtension{},
-		&tls.RenegotiationInfoExtension{Renegotiation: tls.RenegotiateOnceAsClient},
-		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
+		&tls.SCTExtension{},
 		&tls.SupportedPointsExtension{SupportedPoints: []byte{tls.PointFormatUncompressed}},
-		&tls.StatusRequestExtension{},
+		tls.BoringGREASEECH(),
 		&tls.ALPNExtension{AlpnProtocols: []string{"h2", "http/1.1"}},
-		&tls.UtlsGREASEExtension{},
-		&tls.UtlsPreSharedKeyExtension{},
-	)
+		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
+	}
+
+	if trustAnchors {
+		exts = append(exts, &tls.GenericExtension{Id: 0xca34, Data: []byte{0x00, 0x00}}) // trust_anchors (Chrome 146+)
+	}
+
+	exts = append(exts, &tls.UtlsGREASEExtension{})
+
+	if psk {
+		exts = append(exts, &tls.UtlsPreSharedKeyExtension{})
+	}
+
 	return exts
 }
 
-// tlsType7: +permute +ECH +PSK +CURVES_3 +ALPS_new +alps_new_codepoint (v132+)
-func makeChromeTLSType7(curves []tls.CurveID, keyShares []tls.KeyShare) []tls.TLSExtension {
-	return makeChromeTLSType6(curves, keyShares, true)
+// tlsType7: +permute +ECH +CURVES_3 +ALPS_new_codepoint +PSK (v132+)
+// Extension order matches real Chrome (verified against wreq-util).
+// trust_anchors extension (0xca34) only for Chrome 146+.
+func makeChromeTLSType7(curves []tls.CurveID, keyShares []tls.KeyShare, psk bool, trustAnchors bool) []tls.TLSExtension {
+	return makeChromeTLSType6(curves, keyShares, true, psk, trustAnchors)
 }
 
 // --- Helper to create a ClientProfile ---
@@ -420,112 +435,113 @@ var Chrome_120 = makeChromeProfile("120", h2SettingsType3, h2SettingsOrderType3,
 // Chrome 123: same as 117 (tlsType5)
 var Chrome_123 = makeChromeProfile("123", h2SettingsType3, h2SettingsOrderType3, makeChromeTLSType5)
 
-// Chrome 124: tlsType6 + CURVES_2 + http2Type3
+// Chrome 124: tlsType6 + CURVES_2 + http2Type3 + PSK
 var Chrome_124 = makeChromeProfile("124", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
 // Chrome 126: same as 124
 var Chrome_126 = makeChromeProfile("126", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
 // Chrome 127: same as 124
 var Chrome_127 = makeChromeProfile("127", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
 // Chrome 128: same as 124
 var Chrome_128 = makeChromeProfile("128", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
 // Chrome 129: same as 124
 var Chrome_129 = makeChromeProfile("129", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
 // Chrome 130: same as 124
 var Chrome_130 = makeChromeProfile("130", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV2, chromeKeySharesV2, false, true, false) })
 
-// Chrome 131: tlsType6 + CURVES_3 + http2Type3
+// Chrome 131: tlsType6 + CURVES_3 + http2Type3 + PSK
 var Chrome_131 = makeChromeProfile("131", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV3, chromeKeySharesV3, false) })
+	func() []tls.TLSExtension { return makeChromeTLSType6(chromeCurvesV3, chromeKeySharesV3, false, true, false) })
 
-// Chrome 132: tlsType7 + CURVES_3 + http2Type3 (new ALPS codepoint)
+// Chrome 132: tlsType7 + CURVES_3 + http2Type3 + PSK (new ALPS codepoint)
 var Chrome_132 = makeChromeProfile("132", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
-// Chrome 133-148: same as 132
+// Chrome 133-145: same as 132
 var Chrome_133 = makeChromeProfile("133", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_134 = makeChromeProfile("134", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_135 = makeChromeProfile("135", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_136 = makeChromeProfile("136", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_137 = makeChromeProfile("137", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_138 = makeChromeProfile("138", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_139 = makeChromeProfile("139", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_140 = makeChromeProfile("140", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_141 = makeChromeProfile("141", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_142 = makeChromeProfile("142", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_143 = makeChromeProfile("143", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_144 = makeChromeProfile("144", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
 var Chrome_145 = makeChromeProfile("145", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false) })
 
+// Chrome 146-148: trust_anchors (0xca34) included for Chrome 146+ with PSK
 var Chrome_146 = makeChromeProfile("146", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, true) })
 
 var Chrome_147 = makeChromeProfile("147", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, true) })
 
 var Chrome_148 = makeChromeProfile("148", h2SettingsType3, h2SettingsOrderType3,
-	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+	func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, true) })
 
 // ============================================================================
 // Edge Profiles (use Chrome TLS but Edge-style HTTP/2)
 // ============================================================================
 
-func makeEdgeProfile(version string) ClientProfile {
+func makeEdgeProfile(version string, trustAnchors bool) ClientProfile {
 	return makeChromeProfile("Edge_"+version, h2SettingsType3, h2SettingsOrderType3,
-		func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3) })
+		func() []tls.TLSExtension { return makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, trustAnchors) })
 }
 
-var Edge_131 = makeEdgeProfile("131")
-var Edge_134 = makeEdgeProfile("134")
-var Edge_135 = makeEdgeProfile("135")
-var Edge_136 = makeEdgeProfile("136")
-var Edge_137 = makeEdgeProfile("137")
-var Edge_138 = makeEdgeProfile("138")
-var Edge_139 = makeEdgeProfile("139")
-var Edge_140 = makeEdgeProfile("140")
-var Edge_141 = makeEdgeProfile("141")
-var Edge_142 = makeEdgeProfile("142")
-var Edge_143 = makeEdgeProfile("143")
-var Edge_144 = makeEdgeProfile("144")
-var Edge_145 = makeEdgeProfile("145")
-var Edge_146 = makeEdgeProfile("146")
-var Edge_147 = makeEdgeProfile("147")
-var Edge_148 = makeEdgeProfile("148")
+var Edge_131 = makeEdgeProfile("131", false)
+var Edge_134 = makeEdgeProfile("134", false)
+var Edge_135 = makeEdgeProfile("135", false)
+var Edge_136 = makeEdgeProfile("136", false)
+var Edge_137 = makeEdgeProfile("137", false)
+var Edge_138 = makeEdgeProfile("138", false)
+var Edge_139 = makeEdgeProfile("139", false)
+var Edge_140 = makeEdgeProfile("140", false)
+var Edge_141 = makeEdgeProfile("141", false)
+var Edge_142 = makeEdgeProfile("142", false)
+var Edge_143 = makeEdgeProfile("143", false)
+var Edge_144 = makeEdgeProfile("144", false)
+var Edge_145 = makeEdgeProfile("145", false)
+var Edge_146 = makeEdgeProfile("146", true)
+var Edge_147 = makeEdgeProfile("147", true)
+var Edge_148 = makeEdgeProfile("148", true)
 
 // ============================================================================
 // Safari Profiles (based on wreq safari/tls.rs and safari/http2.rs)
@@ -1069,7 +1085,7 @@ func makeOperaProfile(version string) ClientProfile {
 				return tls.ClientHelloSpec{
 					CipherSuites:       chromeCipherSuites,
 					CompressionMethods: []byte{tls.CompressionNone},
-					Extensions:         makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3),
+					Extensions:         makeChromeTLSType7(chromeCurvesV3, chromeKeySharesV3, true, false),
 				}, nil
 			},
 		},

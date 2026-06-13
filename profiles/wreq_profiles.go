@@ -18,7 +18,6 @@ var h2SettingsType1 = map[http2.SettingID]uint32{
 	http2.SettingEnablePush:           1,
 	http2.SettingMaxConcurrentStreams: 1000,
 	http2.SettingInitialWindowSize:    6291456,
-	http2.SettingMaxFrameSize:         16384,
 	http2.SettingMaxHeaderListSize:    262144,
 }
 
@@ -27,7 +26,6 @@ var h2SettingsOrderType1 = []http2.SettingID{
 	http2.SettingEnablePush,
 	http2.SettingMaxConcurrentStreams,
 	http2.SettingInitialWindowSize,
-	http2.SettingMaxFrameSize,
 	http2.SettingMaxHeaderListSize,
 }
 
@@ -37,7 +35,6 @@ var h2SettingsType2 = map[http2.SettingID]uint32{
 	http2.SettingEnablePush:           0,
 	http2.SettingMaxConcurrentStreams: 1000,
 	http2.SettingInitialWindowSize:    6291456,
-	http2.SettingMaxFrameSize:         16384,
 	http2.SettingMaxHeaderListSize:    262144,
 }
 
@@ -46,33 +43,29 @@ var h2SettingsOrderType2 = []http2.SettingID{
 	http2.SettingEnablePush,
 	http2.SettingMaxConcurrentStreams,
 	http2.SettingInitialWindowSize,
-	http2.SettingMaxFrameSize,
 	http2.SettingMaxHeaderListSize,
 }
 
-// http2Type3: v117+ (push=false, no explicit max_concurrent_streams — wreq default)
+// http2Type3: v117+ (push=false, no max_concurrent_streams, no max_frame_size)
 var h2SettingsType3 = map[http2.SettingID]uint32{
 	http2.SettingHeaderTableSize:   65536,
 	http2.SettingEnablePush:        0,
 	http2.SettingInitialWindowSize: 6291456,
-	http2.SettingMaxFrameSize:      16384,
 	http2.SettingMaxHeaderListSize: 262144,
 }
 
 var h2SettingsOrderType3 = []http2.SettingID{
 	http2.SettingHeaderTableSize,
 	http2.SettingEnablePush,
-	http2.SettingMaxConcurrentStreams,
 	http2.SettingInitialWindowSize,
-	http2.SettingMaxFrameSize,
 	http2.SettingMaxHeaderListSize,
 }
 
 // pseudoHeaderOrder matching wreq: :method, :authority, :scheme, :path
 var chromePseudoOrder = []string{":method", ":authority", ":scheme", ":path"}
 
-// connectionFlow matching wreq: 15728640
-const chromeConnFlow uint32 = 15728640
+// connectionFlow matching real Chrome: 15663105
+const chromeConnFlow uint32 = 15663105
 
 // --- Shared TLS Configurations ---
 
@@ -154,6 +147,24 @@ var chromeKeySharesV3 = []tls.KeyShare{
 
 // --- Profile Builders (matching wreq tls_options! variants) ---
 
+// copyKeyShares deep-copies a KeyShare slice to prevent uTLS from mutating
+// the shared global variables during TLS handshakes. Each handshake generates
+// ephemeral key material and writes it into KeyShare.Data; without copying,
+// the second handshake sees stale/corrupted key data and fails with
+// "local error: tls: internal error".
+func copyKeyShares(src []tls.KeyShare) []tls.KeyShare {
+	dst := make([]tls.KeyShare, len(src))
+	for i, ks := range src {
+		var data []byte
+		if len(ks.Data) > 0 {
+			data = make([]byte, len(ks.Data))
+			copy(data, ks.Data)
+		}
+		dst[i] = tls.KeyShare{Group: ks.Group, Data: data}
+	}
+	return dst
+}
+
 // tlsType1: base Chrome TLS (v100-v104, v110)
 func makeChromeTLSType1() []tls.TLSExtension {
 	return []tls.TLSExtension{
@@ -168,7 +179,7 @@ func makeChromeTLSType1() []tls.TLSExtension {
 		&tls.StatusRequestExtension{},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SCTExtension{},
-		&tls.KeyShareExtension{KeyShares: chromeKeySharesV1},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
@@ -193,7 +204,7 @@ func makeChromeTLSType2() []tls.TLSExtension {
 		&tls.StatusRequestExtension{},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SCTExtension{},
-		&tls.KeyShareExtension{KeyShares: chromeKeySharesV1},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
@@ -219,7 +230,7 @@ func makeChromeTLSType3() []tls.TLSExtension {
 		&tls.StatusRequestExtension{},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SCTExtension{},
-		&tls.KeyShareExtension{KeyShares: chromeKeySharesV1},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
@@ -244,7 +255,7 @@ func makeChromeTLSType4() []tls.TLSExtension {
 		&tls.StatusRequestExtension{},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SCTExtension{},
-		&tls.KeyShareExtension{KeyShares: chromeKeySharesV1},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
@@ -266,7 +277,7 @@ func makeChromeTLSType5() []tls.TLSExtension {
 		}},
 		&tls.SCTExtension{},
 		tls.BoringGREASEECH(),
-		&tls.KeyShareExtension{KeyShares: chromeKeySharesV1},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(chromeKeySharesV1)},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SupportedCurvesExtension{Curves: chromeCurvesV1},
 		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
@@ -299,7 +310,7 @@ func makeChromeTLSType6(curves []tls.CurveID, keyShares []tls.KeyShare, alpsNew 
 		}},
 		&tls.SCTExtension{},
 		tls.BoringGREASEECH(),
-		&tls.KeyShareExtension{KeyShares: keyShares},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(keyShares)},
 		&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: chromeSigAlgs},
 		&tls.SupportedCurvesExtension{Curves: curves},
 		&tls.UtlsCompressCertExtension{Algorithms: []tls.CertCompressionAlgo{tls.CertCompressionBrotli}},
@@ -699,7 +710,7 @@ func makeSafariProfile(version string, ciphers []uint16, sigAlgs []tls.Signature
 						&tls.StatusRequestExtension{},
 						&tls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: sigAlgs},
 						&tls.SCTExtension{},
-						&tls.KeyShareExtension{KeyShares: keyShares},
+						&tls.KeyShareExtension{KeyShares: copyKeyShares(keyShares)},
 						&tls.PSKKeyExchangeModesExtension{Modes: []uint8{tls.PskModeDHE}},
 						&tls.SupportedVersionsExtension{Versions: []uint16{
 							tls.GREASE_PLACEHOLDER, tls.VersionTLS13, tls.VersionTLS12,
@@ -814,22 +825,17 @@ var firefoxKeyShares2 = []tls.KeyShare{
 	{Group: tls.CurveP256},
 }
 
-// Firefox HTTP/2 settings (http2_options!(1): ff133, ff135, ff139+)
+// Firefox HTTP/2 settings (matching bogdanfinn/tls-client)
 var firefoxSettings = map[http2.SettingID]uint32{
 	http2.SettingHeaderTableSize:   65536,
-	http2.SettingEnablePush:        0,
 	http2.SettingInitialWindowSize: 131072,
 	http2.SettingMaxFrameSize:      16384,
-	http2.SettingMaxHeaderListSize: 262144,
 }
 
 var firefoxSettingsOrder = []http2.SettingID{
 	http2.SettingHeaderTableSize,
-	http2.SettingEnablePush,
-	http2.SettingMaxConcurrentStreams,
 	http2.SettingInitialWindowSize,
 	http2.SettingMaxFrameSize,
-	http2.SettingMaxHeaderListSize,
 }
 
 // Firefox pseudo-header order: :method, :path, :authority, :scheme
@@ -874,7 +880,7 @@ func makeFirefoxProfile(version string, curves []tls.CurveID, keyShares []tls.Ke
 		&tls.StatusRequestExtension{},
 		&tls.FakeDelegatedCredentialsExtension{SupportedSignatureAlgorithms: firefoxDelegatedCredentialsAlgs},
 		&tls.SCTExtension{},
-		&tls.KeyShareExtension{KeyShares: keyShares},
+		&tls.KeyShareExtension{KeyShares: copyKeyShares(keyShares)},
 		&tls.SupportedVersionsExtension{Versions: []uint16{
 			tls.VersionTLS13, tls.VersionTLS12,
 		}},

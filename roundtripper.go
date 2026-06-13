@@ -12,8 +12,8 @@ import (
 	http "github.com/bogdanfinn/fhttp"
 	"github.com/bogdanfinn/fhttp/http2"
 	"github.com/bogdanfinn/quic-go-utls/http3"
-	"xiaozhou26/re-tlsclient/bandwidth"
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/bandwidth"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	tls "github.com/bogdanfinn/utls"
 	"golang.org/x/net/proxy"
 )

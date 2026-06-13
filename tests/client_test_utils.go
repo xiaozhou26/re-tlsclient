@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 	tls "github.com/bogdanfinn/utls"
 )
 

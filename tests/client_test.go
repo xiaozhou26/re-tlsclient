@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"xiaozhou26/re-tlsclient/profiles"
+	"github.com/xiaozhou26/re-tlsclient/profiles"
 
 	http "github.com/bogdanfinn/fhttp"
-	tls_client "xiaozhou26/re-tlsclient"
+	tls_client "github.com/xiaozhou26/re-tlsclient"
 	tls "github.com/bogdanfinn/utls"
 )
 

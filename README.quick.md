@@ -24,7 +24,7 @@ import (
     "fmt"
     "io"
 
-    "re-tlsclient/fp"
+    "github.com/xiaozhou26/re-tlsclient/fp"
 )
 
 func main() {

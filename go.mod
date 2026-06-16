@@ -1,4 +1,4 @@
-module re-tlsclient
+module github.com/xiaozhou26/re-tlsclient
 
 go 1.26.4
 

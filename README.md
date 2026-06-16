@@ -25,7 +25,7 @@
 
 ## 项目结构
 
-- `client.go`：客户端主体、HTTP 请求方法、WebSocket 建连（package 名 `fp`，import path 为 `re-tlsclient/fp`）
+- `client.go`：客户端主体、HTTP 请求方法、WebSocket 建连（package 名 `fp`，import path 为 `github.com/xiaozhou26/re-tlsclient/fp`）
 - `client_order_test.go` / `client_retry_test.go`：客户端 header 顺序与重试的单元测试
 - `gospider_client.go`：`goSpiderSpec` -> `ClientProfile` 构建逻辑
 - `gospider_spec.go`：`goSpiderSpec` 解析与结构化输出
@@ -45,7 +45,7 @@ import (
     "fmt"
     "io"
 
-    "re-tlsclient/fp"
+    "github.com/xiaozhou26/re-tlsclient/fp"
 )
 
 func main() {

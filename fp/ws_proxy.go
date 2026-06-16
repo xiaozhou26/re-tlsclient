@@ -31,7 +31,9 @@ var wsUpgrader = gorillawebsocket.Upgrader{
 //
 // 用法示例:
 //
-//	client, _ := re-tlsclient.NewClient(ctx, re-tlsclient.ClientOption{
+//	import "github.com/xiaozhou26/re-tlsclient/fp"
+//
+//	client, _ := fp.NewClient(ctx, fp.ClientOption{
 //	    Spec: "...",
 //	})
 //	http.Handle("/ws", client.WebsocketProxy(ctx, "wss://upstream.example.com/ws"))

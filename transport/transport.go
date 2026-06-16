@@ -5,7 +5,7 @@ import (
 	stdhttp "net/http"
 
 	fhttp "github.com/bogdanfinn/fhttp"
-	"re-tlsclient/fp"
+	"github.com/xiaozhou26/re-tlsclient/fp"
 )
 
 // FingerprintTransport 实现 net/http.RoundTripper 接口，

@@ -25,9 +25,9 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"re-tlsclient/fp"
-	"re-tlsclient/jar"
-	"re-tlsclient/transport"
+	"github.com/xiaozhou26/re-tlsclient/fp"
+	"github.com/xiaozhou26/re-tlsclient/jar"
+	"github.com/xiaozhou26/re-tlsclient/transport"
 )
 
 // TestMigration_LocalServer 对照测试：本地 HTTP server 上，

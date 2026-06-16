@@ -33,11 +33,11 @@
 
 | 子包 | import 路径 | 提供什么 | 典型场景 |
 |---|---|---|---|
-| `fp` | `re-tlsclient/fp` | `Client` / `NewClient` / `Get` / `Post` / `DO` / `NewWebsocket` / `WebsocketProxy` | 业务主入口，几乎所有人都会 import |
-| `profile` | `re-tlsclient/profile` | `GetExtraProfile(name)` / `ListExtraProfileNames()` / `ExtraProfiles`（80+ 自填 profile 映射） | 直接按名字取一个 `profiles.ClientProfile` 给 `tls-client` 用 |
-| `spec` | `re-tlsclient/spec` | `ParseGoSpiderSpec(s)` / `BuildProfile(s)` / `IsGREASE` | 处理 `TLS_HEX@H1_HEX@H2_HEX` 字符串；通常通过 `ClientOption.Spec` 间接用 |
-| `jar` | `re-tlsclient/jar` | `Jar` / `NewJar()` / `SetCookiesByMap` / `Clear` | 需要在请求间共享 / 预置 cookie 时 |
-| `transport` | `re-tlsclient/transport` | `FingerprintTransport` / `New(c, manageCookies...)` | 把 client 挂到 `httputil.ReverseProxy.Transport` |
+| `fp` | `github.com/xiaozhou26/re-tlsclient/fp` | `Client` / `NewClient` / `Get` / `Post` / `DO` / `NewWebsocket` / `WebsocketProxy` | 业务主入口，几乎所有人都会 import |
+| `profile` | `github.com/xiaozhou26/re-tlsclient/profile` | `GetExtraProfile(name)` / `ListExtraProfileNames()` / `ExtraProfiles`（80+ 自填 profile 映射） | 直接按名字取一个 `profiles.ClientProfile` 给 `tls-client` 用 |
+| `spec` | `github.com/xiaozhou26/re-tlsclient/spec` | `ParseGoSpiderSpec(s)` / `BuildProfile(s)` / `IsGREASE` | 处理 `TLS_HEX@H1_HEX@H2_HEX` 字符串；通常通过 `ClientOption.Spec` 间接用 |
+| `jar` | `github.com/xiaozhou26/re-tlsclient/jar` | `Jar` / `NewJar()` / `SetCookiesByMap` / `Clear` | 需要在请求间共享 / 预置 cookie 时 |
+| `transport` | `github.com/xiaozhou26/re-tlsclient/transport` | `FingerprintTransport` / `New(c, manageCookies...)` | 把 client 挂到 `httputil.ReverseProxy.Transport` |
 
 **依赖图**（无环）：
 
@@ -129,8 +129,8 @@ import (
     "context"
 
     "github.com/gogf/gf/v2/frame/g"
-    "re-tlsclient/fp"
-    "re-tlsclient/jar"
+    "github.com/xiaozhou26/re-tlsclient/fp"
+    "github.com/xiaozhou26/re-tlsclient/jar"
 )
 
 func main() {
@@ -209,8 +209,8 @@ proxy := &httputil.ReverseProxy{Transport: &rt{c: client}}
 ```go
 import (
     "net/http/httputil"
-    "re-tlsclient/fp"
-    "re-tlsclient/transport"
+    "github.com/xiaozhou26/re-tlsclient/fp"
+    "github.com/xiaozhou26/re-tlsclient/transport"
 )
 
 proxy := &httputil.ReverseProxy{
@@ -281,7 +281,7 @@ client, _ := fp.NewClient(ctx, fp.ClientOption{
 })
 
 // 方式 B：自己解析 / 自己构造成 profile 再塞回去
-import "re-tlsclient/spec"
+import "github.com/xiaozhou26/re-tlsclient/spec"
 
 spec, _ := spec.ParseGoSpiderSpec(rawSpec)
 fmt.Println(spec.TLS.ServerName(), spec.TLS.Protocols())
@@ -317,7 +317,7 @@ client, _ := tls_client.NewHttpClient(..., tls_client.WithCookieJar(jar))
 **`re-tlsclient` 写法**：
 
 ```go
-import "re-tlsclient/jar"
+import "github.com/xiaozhou26/re-tlsclient/jar"
 
 j := jar.NewJar()
 j.SetCookiesByMap("https://example.com", map[string]string{
@@ -336,7 +336,7 @@ client, _ := fp.NewClient(ctx, fp.ClientOption{CookieJar: j})
 ```go
 import (
     tls_client "github.com/bogdanfinn/tls-client"
-    "re-tlsclient/profile"
+    "github.com/xiaozhou26/re-tlsclient/profile"
 )
 
 prof, ok := profile.GetExtraProfile("chrome_148")
@@ -354,7 +354,7 @@ client, _ := tls_client.NewHttpClient(tls_client.NewNoopLogger(),
 `tests/migrate_test.go` 是一份**自包含的端到端迁移对照测试**——用 `httptest` 起本地 server，**不依赖外网**。两份写法同时跑，断言行为一致：
 
 ```
-ok  	re-tlsclient/tests	0.267s
+ok  	github.com/xiaozhou26/re-tlsclient/tests	0.267s
 ```
 
 包含的子测试：
@@ -434,7 +434,7 @@ client, _ := fp.NewClient(ctx, fp.ClientOption{
 `client.Transport(...)` 已经是历史了——`fp` 不再 import `transport`（避免循环）。改用：
 
 ```go
-import "re-tlsclient/transport"
+import "github.com/xiaozhou26/re-tlsclient/transport"
 
 proxy := &httputil.ReverseProxy{
     Transport: transport.New(c),          // 客户端 Cookie 透传
@@ -456,7 +456,7 @@ proxy := &httputil.ReverseProxy{
 如果名字写错，`NewClient` 不会报错——它会静默回落到 `Okhttp4Android12` 默认。**写测试断言你拿到的 profile**：
 
 ```go
-import "re-tlsclient/fp"
+import "github.com/xiaozhou26/re-tlsclient/fp"
 
 spec, _ := client.HttpClient.GetClientHelloSpec()
 fmt.Println(len(spec.CipherSuites))  // 期望 >= 5
@@ -464,7 +464,7 @@ fmt.Println(len(spec.CipherSuites))  // 期望 >= 5
 
 ### 7.6 不要再 import `tls-client` 子包
 
-`re-tlsclient` 替你挡住了 `tls-client` / `fhttp` / `utls` 的导出符号。业务代码里再 import `github.com/bogdanfinn/tls-client` 会让"迁移"的意义打折——所有需求都能用 `re-tlsclient/*` 子包覆盖。
+`re-tlsclient` 替你挡住了 `tls-client` / `fhttp` / `utls` 的导出符号。业务代码里再 import `github.com/bogdanfinn/tls-client` 会让"迁移"的意义打折——所有需求都能用 `github.com/xiaozhou26/re-tlsclient/*` 子包覆盖。
 
 唯一例外：直接拿 `profile.ExtraProfiles[name]` 喂给旧代码时（见 4.9）。
 
@@ -472,7 +472,7 @@ fmt.Println(len(spec.CipherSuites))  // 期望 >= 5
 
 ## 8. 一键迁移检查表
 
-- [ ] 替换 `import "github.com/bogdanfinn/tls-client"` → `import "re-tlsclient/fp"`（按需再 `import "re-tlsclient/jar"` / `transport` / `spec` / `profile`）
+- [ ] 替换 `import "github.com/bogdanfinn/tls-client"` → `import "github.com/xiaozhou26/re-tlsclient/fp"`（按需再 `import "github.com/xiaozhou26/re-tlsclient/jar"` / `transport` / `spec` / `profile`）
 - [ ] 改 `tls_client.NewHttpClient(logger, opts...)` → `fp.NewClient(ctx, fp.ClientOption{...})`
 - [ ] 把 `context.Background()` 包成 `g.Ctx(context.Background())`
 - [ ] 把 `WithClientProfile(profiles.Chrome_131)` → `ClientProfile: "Chrome_131"`

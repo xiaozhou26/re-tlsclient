@@ -16,9 +16,9 @@ import (
 	"github.com/bogdanfinn/websocket"
 	"github.com/gogf/gf/v2/frame/g"
 
-	"re-tlsclient/jar"
-	"re-tlsclient/profile"
-	"re-tlsclient/spec"
+	"github.com/xiaozhou26/re-tlsclient/jar"
+	"github.com/xiaozhou26/re-tlsclient/profile"
+	"github.com/xiaozhou26/re-tlsclient/spec"
 )
 
 // ClientOption ...

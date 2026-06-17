@@ -1,5 +1,5 @@
 // Command re-tlsclient demonstrates accessing chat.openai.com with the
-// Chrome 148 fingerprint defined in ./chrome148.
+// Chrome 148 fingerprint defined in ./opera131.
 package main
 
 import (
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xiaozhou26/re-tlsclient/chrome148"
+	"github.com/xiaozhou26/re-tlsclient/opera131"
 
 	"github.com/andybalholm/brotli"
 	fhttp "github.com/bogdanfinn/fhttp"
@@ -29,7 +29,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	client, err := chrome148.NewClient()
+	client, err := opera131.NewClient()
 	if err != nil {
 		fmt.Println("init client:", err)
 		os.Exit(1)
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	// Always pin Chrome 148's header set on the outgoing request.
-	chrome148.ApplyHeaders(req)
+	opera131.ApplyHeaders(req)
 
 	// chatgpt's home page is a SPA: ask for the "real" content negotiated by
 	// the page itself, and accept compressed bodies.

@@ -2,10 +2,17 @@
 // OkHttp 5 (Android) as defined in
 // wreq-util/src/emulate/profile/okhttp.rs (okhttp5).
 //
-//   TLS:    CIPHER_LIST (full cipher suite), curves = X25519 : P-256 : P-384
+//   TLS:    CIPHER_LIST (full cipher suite incl. 3DES), curves = X25519 : P-256 : P-384,
+//           sigalgs = SIGALGS_LIST (9 sigalgs incl. PKCS1WithSHA1),
+//           enable_ocsp_stapling = true
 //   HTTP/2: init 16777216, conn 16777216,
 //           pseudo (method, path, authority, scheme)
 //   Header: accept */* + accept-encoding gzip + accept-language en-US
+//
+// Extension layout mirrors tls-client's Okhttp4Android10
+// (contributed_custom_profiles.go:1275). Notable: no GREASE, no
+// MLKEM, no ECH, no ALPS, no cert_compressors, ends with
+// UtlsPaddingExtension for client_hello length alignment.
 package okhttp5
 
 import (
@@ -34,13 +41,11 @@ func Profile() profiles.ClientProfile {
 			Seed:                 nil,
 			SpecFactory:          specFactory,
 		},
+		// settings mirror Okhttp4Android10 (contributed_custom_profiles.go:1343).
 		map[http2.SettingID]uint32{
-			http2.SettingHeaderTableSize:   4096,
-			http2.SettingEnablePush:        0,
 			http2.SettingInitialWindowSize: 16777216,
-			http2.SettingMaxHeaderListSize: 0,
 		},
-		// settingsOrder from okhttp.rs build_emulation
+		// settingsOrder from okhttp.rs build_emulation (settings_order!()).
 		[]http2.SettingID{
 			http2.SettingHeaderTableSize,
 			http2.SettingEnablePush,
@@ -51,9 +56,9 @@ func Profile() profiles.ClientProfile {
 			http2.SettingEnableConnectProtocol,
 			http2.SettingNoRFC7540Priorities,
 		},
-		// pseudoOrder from okhttp.rs (method, path, authority, scheme)
+		// pseudoOrder from okhttp.rs (method, path, authority, scheme).
 		[]string{":method", ":path", ":authority", ":scheme"},
-		// initial_connection_window_size = 16777216
+		// initial_connection_window_size = 16777216.
 		16777216,
 		nil, nil,
 		0, false,
@@ -61,8 +66,12 @@ func Profile() profiles.ClientProfile {
 	)
 }
 
+// specFactory reproduces OkHttp 5's TLS ClientHello spec.
+// Mirrors wreq-util's OkHttpTlsConfig { cipher_list = CIPHER_LIST }
+// and tls-client's Okhttp4Android10 extension layout.
 func specFactory() (utls.ClientHelloSpec, error) {
 	return utls.ClientHelloSpec{
+		// CIPHER_LIST from okhttp.rs:18-36 (15 ciphers incl. 3DES).
 		CipherSuites: []uint16{
 			utls.TLS_AES_128_GCM_SHA256,
 			utls.TLS_AES_256_GCM_SHA384,
@@ -83,27 +92,35 @@ func specFactory() (utls.ClientHelloSpec, error) {
 		},
 		CompressionMethods: []byte{utls.CompressionNone},
 		Extensions: []utls.TLSExtension{
+			// RenegotiationInfo first (Okhttp4Android10 layout).
+			&utls.RenegotiationInfoExtension{Renegotiation: utls.RenegotiateNever},
 			&utls.SNIExtension{},
 			&utls.ExtendedMasterSecretExtension{},
-			&utls.RenegotiationInfoExtension{Renegotiation: utls.RenegotiateOnceAsClient},
+			// CURVES = "X25519:P-256:P-384" (no MLKEM, no GREASE).
 			&utls.SupportedCurvesExtension{Curves: []utls.CurveID{
 				utls.X25519, utls.CurveP256, utls.CurveP384,
 			}},
 			&utls.SupportedPointsExtension{SupportedPoints: []byte{utls.PointFormatUncompressed}},
 			&utls.SessionTicketExtension{},
+			// ALPN before StatusRequest (Okhttp4Android10 layout).
 			&utls.ALPNExtension{AlpnProtocols: []string{"h2", "http/1.1"}},
+			// enable_ocsp_stapling=true → StatusRequest.
 			&utls.StatusRequestExtension{},
+			// SIGALGS_LIST from okhttp.rs:5-16 (9 sigalgs incl. PKCS1WithSHA1).
 			&utls.SignatureAlgorithmsExtension{SupportedSignatureAlgorithms: []utls.SignatureScheme{
 				utls.ECDSAWithP256AndSHA256, utls.PSSWithSHA256, utls.PKCS1WithSHA256,
 				utls.ECDSAWithP384AndSHA384, utls.PSSWithSHA384, utls.PKCS1WithSHA384,
 				utls.PSSWithSHA512, utls.PKCS1WithSHA512, utls.PKCS1WithSHA1,
 			}},
-			&utls.SCTExtension{},
+			// Single X25519 key share (no MLKEM, no GREASE).
 			&utls.KeyShareExtension{KeyShares: []utls.KeyShare{
 				{Group: utls.X25519},
 			}},
-			&utls.SupportedVersionsExtension{Versions: []uint16{utls.VersionTLS13, utls.VersionTLS12}},
 			&utls.PSKKeyExchangeModesExtension{Modes: []uint8{utls.PskModeDHE}},
+			&utls.SupportedVersionsExtension{Versions: []uint16{utls.VersionTLS13, utls.VersionTLS12}},
+			// UtlsPadding for client_hello length alignment (BoringSSL
+			// does this for OkHttp / Java clients).
+			&utls.UtlsPaddingExtension{GetPaddingLen: utls.BoringPaddingStyle},
 		},
 	}, nil
 }

@@ -42,24 +42,18 @@ func Profile() profiles.ClientProfile {
 			SpecFactory:          specFactory,
 		},
 		// settings mirror Okhttp4Android10 (contributed_custom_profiles.go:1343).
+		// Only the keys present in the map appear in the SETTINGS frame;
+		// settingsOrder controls the order of the keys that ARE present.
 		map[http2.SettingID]uint32{
 			http2.SettingInitialWindowSize: 16777216,
 		},
-		// settingsOrder from okhttp.rs build_emulation (settings_order!()).
 		[]http2.SettingID{
-			http2.SettingHeaderTableSize,
-			http2.SettingEnablePush,
-			http2.SettingMaxConcurrentStreams,
 			http2.SettingInitialWindowSize,
-			http2.SettingMaxFrameSize,
-			http2.SettingMaxHeaderListSize,
-			http2.SettingEnableConnectProtocol,
-			http2.SettingNoRFC7540Priorities,
 		},
 		// pseudoOrder from okhttp.rs (method, path, authority, scheme).
 		[]string{":method", ":path", ":authority", ":scheme"},
-		// initial_connection_window_size = 16777216.
-		16777216,
+		// connectionFlow = 16711681 (Okhttp4Android10, contributed_custom_profiles.go:1356).
+		16711681,
 		nil, nil,
 		0, false,
 		nil, nil, 0, nil, false,

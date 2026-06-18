@@ -5,22 +5,22 @@
 // Both v147 and v148 share the same underlying TLS / HTTP/2 stack —
 // they inherit from v132::build_emulation:
 //
-//   TLS:    tls_options!(7, CURVES_3)   →  permute_extensions=true
-//                                          + enable_ech_grease=true
-//                                          + pre_shared_key=true
-//                                          + alps_use_new_codepoint=true
-//                                          + curves = X25519MLKEM768:X25519:P-256:P-384
-//                                          + cipher = CIPHER_LIST (16, no SHA1, no 3DES)
-//                                          + sigalgs = SIGALGS_LIST (8, no PKCS1WithSHA1)
-//                                          + certificate_compressors = [Brotli]
-//   HTTP/2: http2_options!(3)           →  initial_window=6291456
-//                                          + initial_connection_window=15728640
-//                                          + max_header_list=262144
-//                                          + header_table=65536
-//                                          + headers_stream_dep=(0, w=219, excl=true)
-//                                          + push=off
-//   Header: header_initializer_with_zstd_priority
-//                                          →  zstd accept-encoding + "priority: u=0, i"
+//	TLS:    tls_options!(7, CURVES_3)   →  permute_extensions=true
+//	                                       + enable_ech_grease=true
+//	                                       + pre_shared_key=true
+//	                                       + alps_use_new_codepoint=true
+//	                                       + curves = X25519MLKEM768:X25519:P-256:P-384
+//	                                       + cipher = CIPHER_LIST (16, no SHA1, no 3DES)
+//	                                       + sigalgs = SIGALGS_LIST (8, no PKCS1WithSHA1)
+//	                                       + certificate_compressors = [Brotli]
+//	HTTP/2: http2_options!(3)           →  initial_window=6291456
+//	                                       + initial_connection_window=15728640
+//	                                       + max_header_list=262144
+//	                                       + header_table=65536
+//	                                       + headers_stream_dep=(0, w=219, excl=true)
+//	                                       + push=off
+//	Header: header_initializer_with_zstd_priority
+//	                                       →  zstd accept-encoding + "priority: u=0, i"
 //
 // The only difference between v147 and v148 is the UA / sec-ch-ua
 // strings (see WindowsHeaders / MacOSHeaders / etc below, sourced
@@ -97,9 +97,9 @@ var Chrome148WindowsHeaders = fhttp.Header{
 func Profile() profiles.ClientProfile {
 	return profiles.NewClientProfile(
 		utls.ClientHelloID{
-			Client:               "Chrome_v132_Custom",
+			Client:               "Chrome_v148_Custom",
 			RandomExtensionOrder: false, // enabled globally via WithRandomTLSExtensionOrder
-			Version:              "132",
+			Version:              "148",
 			Seed:                 nil,
 			SpecFactory:          specFactory,
 		},
@@ -222,10 +222,9 @@ func specFactory() (utls.ClientHelloSpec, error) {
 			&utls.ApplicationSettingsExtensionNew{SupportedProtocols: []string{"h2"}},
 			// pre_shared_key=true → PskModeDHE.
 			&utls.PSKKeyExchangeModesExtension{Modes: []uint8{utls.PskModeDHE}},
-			// enable_ech_grease=true → BoringSSL sends an ECH
-			// extension. Emitted as BoringGREASEECH (placeholder
-			// bytes) to match the wire-level pattern wreq's
-			// BoringSSL backend produces.
+			// enable_ech_grease=true → BoringGREASEECH()
+			// (required — the master commit a5d2c766 includes
+			// this and is the version that passes chatgpt.com).
 			utls.BoringGREASEECH(),
 			&utls.ALPNExtension{AlpnProtocols: []string{"h2", "http/1.1"}},
 			&utls.UtlsGREASEExtension{},

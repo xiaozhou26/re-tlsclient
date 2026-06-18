@@ -2,7 +2,7 @@
 // target URL (default https://chatgpt.com/) and prints a one-line
 // summary per profile:
 //
-//   <profile> <version> <platform>  status=<N>  time=<X>  proto=<P>  cf-ray=<R>
+//	<profile> <version> <platform>  status=<N>  time=<X>  proto=<P>  cf-ray=<R>
 //
 // If the response is non-2xx, also prints the first 200 bytes of the
 // body so the user can recognize Cloudflare "403 Forbidden" / "Just a
@@ -10,11 +10,12 @@
 // being rejected.
 //
 // Usage:
-//   go run ./cmd/test                                     # run all 6 profiles
-//   go run ./cmd/test -target=https://example.com         # custom target
-//   go run ./cmd/test -profile=chrome -version=V148       # run one combo
-//   go run ./cmd/test -profile=firefox -version=V151 -platform=Windows
-//   go run ./cmd/test -proxy=http://user:pass@host:port
+//
+//	go run ./cmd/test                                     # run all 6 profiles
+//	go run ./cmd/test -target=https://example.com         # custom target
+//	go run ./cmd/test -profile=chrome -version=V148       # run one combo
+//	go run ./cmd/test -profile=firefox -version=V151 -platform=Windows
+//	go run ./cmd/test -proxy=http://user:pass@host:port
 package main
 
 import (
@@ -159,13 +160,13 @@ func buildCombos() []combo {
 
 	// Edge.
 	cs = append(cs, combo{
-		profile: "edge", version: "V147", platform: "Windows",
+		profile: "edge", version: "V134", platform: "Windows",
 		run: func(t string) (int, string) {
 			return runProfile(t, newEdgeClient(edge.V147, edge.Windows))
 		},
 	})
 	cs = append(cs, combo{
-		profile: "edge", version: "V148", platform: "MacOS",
+		profile: "edge", version: "V145", platform: "MacOS",
 		run: func(t string) (int, string) {
 			return runProfile(t, newEdgeClient(edge.V148, edge.MacOS))
 		},
@@ -327,6 +328,12 @@ func runProfile(target string, client tls_client.HttpClient) (int, string) {
 		ApplyHeaders(*fhttp.Request)
 	}); ok {
 		ah.ApplyHeaders(req)
+		if strings.EqualFold(req.URL.Host, "chatgpt.com") || strings.HasSuffix(strings.ToLower(req.URL.Host), ".chatgpt.com") {
+			req.Header.Set("sec-fetch-user", "?1")
+			req.Header.Set("upgrade-insecure-requests", "1")
+			req.Header.Set("origin", "https://chatgpt.com")
+			req.Header.Set("referer", "https://chatgpt.com/")
+		}
 	} else {
 		// Fallback: still pin a stable sec-fetch-* baseline so
 		// profiles that don't expose ApplyHeaders still send
@@ -387,10 +394,10 @@ func runProfile(target string, client tls_client.HttpClient) (int, string) {
 func extractPeetSummary(body []byte) (string, error) {
 	var doc struct {
 		TLS struct {
-			JA3       string `json:"ja3"`
-			JA3Hash   string `json:"ja3_hash"`
-			JA4       string `json:"ja4"`
-			JA4R      string `json:"ja4_r"`
+			JA3     string `json:"ja3"`
+			JA3Hash string `json:"ja3_hash"`
+			JA4     string `json:"ja4"`
+			JA4R    string `json:"ja4_r"`
 		} `json:"tls"`
 		HTTPVersion string `json:"http_version"`
 		UserAgent   string `json:"user_agent"`
